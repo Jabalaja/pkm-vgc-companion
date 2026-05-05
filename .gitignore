@@ -1,0 +1,36 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# AI assistants — local tooling and instructions, not project artifacts
+.claude/
+CLAUDE.md
+.claude.json
+.github/copilot-instructions.md
+.copilot/
+AGENTS.md
+.cursor/
+.cursorrules
+.aider*
+.continue/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+logs/
+
+# OS / temp
+Thumbs.db
+*.tmp
