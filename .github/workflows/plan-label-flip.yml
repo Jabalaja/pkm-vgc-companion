@@ -1,0 +1,22 @@
+name: Flip plan label on Copilot pickup
+
+on:
+  issues:
+    types: [assigned]
+
+permissions:
+  issues: write
+
+jobs:
+  flip:
+    if: github.event.assignee.login == 'Copilot'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Move plan:ready -> plan:in-progress
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue edit "${{ github.event.issue.number }}" \
+            --repo "${{ github.repository }}" \
+            --add-label "plan:in-progress" \
+            --remove-label "plan:ready"
