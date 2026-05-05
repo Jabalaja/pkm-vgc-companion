@@ -10,11 +10,13 @@
 *.swo
 *~
 
-# AI assistants — local tooling and instructions, not project artifacts
+# AI assistants — local tooling and instructions, not project artifacts.
+# `.github/` is intentionally NOT ignored: it holds repo-scoped collaboration
+# artifacts (issue templates, workflows, copilot-instructions) that the cloud
+# tooling needs to read.
 .claude/
 CLAUDE.md
 .claude.json
-.github/copilot-instructions.md
 .copilot/
 AGENTS.md
 .agents/

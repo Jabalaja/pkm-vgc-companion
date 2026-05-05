@@ -1,0 +1,85 @@
+name: Plan
+description: A planning ticket to be implemented by an AI executor or by Chris.
+title: "[Plan] "
+labels: ["plan", "plan:ready"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template for plans handed off to an executor — another AI agent (Cursor, Claude Code in another session, Codex, GitHub Copilot Workspace) or Chris directly. The plan must contain enough context that the executor needs no prior conversation history.
+
+  - type: input
+    id: goal
+    attributes:
+      label: Goal
+      description: What does "done" look like, in one sentence?
+      placeholder: e.g. Add a `regulations` table to the Convex schema with seed data for Set M-A.
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Why this work, and what background does the executor need? Link related issues, files, decisions, or sections of the README.
+    validations:
+      required: true
+
+  - type: textarea
+    id: files
+    attributes:
+      label: Files affected
+      description: List of files to be created, modified, or deleted, with a one-line description for each.
+      placeholder: |
+        - convex/schema.ts (modified) — add `regulations` table
+        - convex/regulations.ts (new) — query + seed mutation
+        - src/routes/index.tsx (modified) — render legal-roster size from query
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps
+      description: Ordered, concrete steps. The executor should be able to follow them without re-deriving sequencing.
+      placeholder: |
+        1. Add `regulations` table definition to `convex/schema.ts`...
+        2. Create `convex/regulations.ts` with `list` query and `seed` mutation...
+        3. Wire up the home route to display the count...
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: Verifiable conditions for "done". Tests pass, build green, manual checks, etc.
+      placeholder: |
+        - `pnpm check` is green
+        - `pnpm test` is green
+        - `pnpm build` succeeds
+        - `pnpm convex:dev` deploys schema without errors
+        - Home route shows a non-zero count after `seed` runs
+    validations:
+      required: true
+
+  - type: textarea
+    id: out-of-scope
+    attributes:
+      label: Out of scope
+      description: What is intentionally NOT part of this plan? Prevents scope creep during execution.
+      placeholder: |
+        - UI styling beyond the existing scaffold
+        - Authentication
+        - Migration of historical regulations
+    validations:
+      required: false
+
+  - type: textarea
+    id: long-form-spec
+    attributes:
+      label: Linked spec (optional)
+      description: If the plan needs more depth than fits comfortably here, link a markdown file under `docs/plans/NNN-slug.md` instead of inlining it.
+      placeholder: docs/plans/003-regulation-bootstrap.md
+    validations:
+      required: false
