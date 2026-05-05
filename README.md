@@ -100,6 +100,15 @@ The project is built as a **Progressive Web App** that runs on desktop and mobil
 | Hosting | Cloudflare Pages (frontend) + Convex Cloud (backend) |
 | CI | GitHub Actions |
 
+### Brand palette
+
+| Token | Hex | Name |
+|---|---|---|
+| `--color-brand-navy` | `#0d3b66` | Regal Navy (primary) |
+| `--color-brand-cream` | `#faf0ca` | Lemon Chiffon (background / on-primary text) |
+
+These are the only project-wide brand color tokens. Neutral colors continue to use Tailwind's default palette.
+
 ### Why these choices
 
 - **Convex over Supabase.** Reactive queries with end-to-end TypeScript types match the Phase-4 live-companion vision: realtime updates without a backend rewrite.
