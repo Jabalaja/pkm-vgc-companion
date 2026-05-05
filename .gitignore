@@ -17,6 +17,8 @@ CLAUDE.md
 .github/copilot-instructions.md
 .copilot/
 AGENTS.md
+.agents/
+skills-lock.json
 .cursor/
 .cursorrules
 .aider*
@@ -34,3 +36,20 @@ logs/
 # OS / temp
 Thumbs.db
 *.tmp
+
+# Node / build output
+node_modules/
+dist/
+dev-dist/
+.vite/
+*.tsbuildinfo
+
+# TanStack Router auto-generated route tree
+src/routeTree.gen.ts
+
+# Convex auto-generated client
+convex/_generated/
+
+# Test output
+coverage/
+.vitest-cache/

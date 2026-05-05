@@ -34,8 +34,6 @@ The current Champions regulation features **Mega Evolution** as its gimmick. Whe
 
 Regulations rotate every few months (e.g. **Set M-A** runs until **June 17, 2026**). A **team is built for one specific regulation**, and its legal roster, legal items, and available gimmick(s) all come from that regulation — not from the team itself.
 
-The active regulation set rotates every few months (e.g. **Regulation Set M-A** runs until **June 17, 2026**). The app tracks the current set and surfaces its allowed/banned roster automatically.
-
 ## Roadmap
 
 The product grows in clearly scoped phases. Each phase is independently useful — a player should get value from Phase 1 even if the rest never ships.
@@ -79,6 +77,36 @@ Iterative refinement based on what real use surfaces. Likely directions:
 - Dark mode by default for venue lighting
 - Optional iCloud / Google Drive sync of teams and notes
 
+## Tech stack
+
+The project is built as a **Progressive Web App** that runs on desktop and mobile browsers, with a cloud-first backend so multi-device use works from day one.
+
+| Layer | Choice |
+|---|---|
+| Language | TypeScript (strict) |
+| Build / bundler | Vite |
+| Framework | React 19 |
+| Backend / DB / realtime / auth | Convex |
+| Styling | Tailwind CSS v4 |
+| Components | shadcn/ui (on Radix Primitives) |
+| Forms / validation | React Hook Form + Zod |
+| Server-state | TanStack Query (Convex hooks for the main path) |
+| Client-state | Zustand |
+| Routing | TanStack Router (file-based) |
+| PWA | vite-plugin-pwa (Workbox) |
+| Lint / format | Biome |
+| Testing | Vitest (unit) + Playwright (E2E) |
+| Package manager | pnpm |
+| Hosting | Cloudflare Pages (frontend) + Convex Cloud (backend) |
+| CI | GitHub Actions |
+
+### Why these choices
+
+- **Convex over Supabase.** Reactive queries with end-to-end TypeScript types match the Phase-4 live-companion vision: realtime updates without a backend rewrite.
+- **Vite SPA over Next.js.** No SSR/SEO needs (the app is login-gated). A pure SPA is the cleaner home for an offline-first installable PWA.
+- **shadcn/ui over a packaged library.** Component code lives in the repo, no black-box dependency, easy to bend for tournament-mode UX.
+- **Biome over ESLint + Prettier.** One Rust-based tool replaces two JS-based ones — faster, simpler config.
+
 ## Non-goals
 
 - This is **not** a battle simulator — Pokémon Showdown and Champions itself cover that space.
@@ -93,7 +121,17 @@ Iterative refinement based on what real use surfaces. Likely directions:
 
 ## Status
 
-Early scaffolding. Currently working toward **Phase 1 (MVP)**. Architecture and tech stack are still open and being decided in the first development sessions.
+Phase-1 scaffold initialized. Tech stack frozen (see below). Next up: regulation + Pokémon data model in Convex, and the team-builder form on top of it.
+
+### Getting started
+
+```bash
+pnpm install            # install dependencies
+pnpm dev                # start the Vite dev server
+pnpm convex:dev         # start the Convex dev backend (first run will prompt to create a deployment)
+pnpm check              # Biome lint + format check
+pnpm test               # Vitest unit tests
+```
 
 ## Prior art
 
