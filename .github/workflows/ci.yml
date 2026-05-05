@@ -25,11 +25,8 @@ jobs:
       - name: Lint and format check
         run: pnpm check
 
-      - name: Type check
-        run: pnpm exec tsc -b
+      - name: Build (generates routeTree, then type-checks)
+        run: pnpm build
 
       - name: Unit tests
         run: pnpm test
-
-      - name: Build
-        run: pnpm build
