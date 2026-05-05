@@ -1,0 +1,5 @@
+# Every PR requires Chris's approval.
+# Combined with the "Main" ruleset (require_code_owner_review: true)
+# this means Copilot and any future bot or contributor cannot merge
+# without an explicit Approve from @Jabalaja.
+*       @Jabalaja
