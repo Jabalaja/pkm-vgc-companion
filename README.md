@@ -155,7 +155,7 @@ Phase-1 data model is live in Convex. The active Champions regulation (`champion
 pnpm install            # install dependencies
 pnpm dev                # start the Vite dev server
 pnpm convex:dev         # start the Convex dev backend (first run will prompt to create a deployment)
-pnpm seed:champions     # one-time, requires .env.local with VITE_CONVEX_URL + CONVEX_DEPLOY_KEY
+pnpm seed:champions     # one-time, requires .env.local with VITE_CONVEX_URL (CONVEX_DEPLOY_KEY optional)
 pnpm check              # Biome lint + format check
 pnpm test               # Vitest unit tests
 ```

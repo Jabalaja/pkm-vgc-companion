@@ -565,10 +565,6 @@ async function main() {
     throw new Error("VITE_CONVEX_URL is required");
   }
 
-  if (!deployKey) {
-    throw new Error("CONVEX_DEPLOY_KEY is required for seeding");
-  }
-
   const [pokedex, items, formatsSource] = await Promise.all([
     fetchJson<Record<string, ShowdownPokedexEntry>>("pokedex.json"),
     fetchShowdownItems("items.js"),
@@ -595,10 +591,12 @@ async function main() {
     ],
     {
       stdio: "inherit",
-      env: {
-        ...process.env,
-        CONVEX_DEPLOY_KEY: deployKey,
-      },
+      env: deployKey
+        ? {
+            ...process.env,
+            CONVEX_DEPLOY_KEY: deployKey,
+          }
+        : process.env,
     },
   );
 
