@@ -116,6 +116,16 @@ These are the only project-wide brand color tokens. Neutral colors continue to u
 - **shadcn/ui over a packaged library.** Component code lives in the repo, no black-box dependency, easy to bend for tournament-mode UX.
 - **Biome over ESLint + Prettier.** One Rust-based tool replaces two JS-based ones — faster, simpler config.
 
+### Future CI/CD enhancements
+
+The current CI runs lint, Convex schema validation (`convex deploy --dry-run`), build/typecheck, and unit tests on every PR. The following are deliberately deferred until they pay off:
+
+- **End-to-end tests (Playwright).** Add once Phase 1 ships a real team-builder flow worth covering across browsers. Until then, E2E setup outweighs the value.
+- **Visual regression (Storybook + Chromatic or Percy).** Add when the repo grows its own component library beyond the shadcn defaults. With only shadcn primitives in source, snapshots would cover library code we did not author.
+- **Lighthouse PWA score (Lighthouse CI).** Add once PWA icons, manifest, and the offline strategy are in place. A score against an incomplete PWA setup is misleading rather than informative.
+
+Auto-rebase of open PR branches against `main` was evaluated and skipped: the existing combination of squash-merge, `auto-merge-copilot.yml`, and GitHub's branch auto-update is sufficient at the current single-developer throughput.
+
 ## Non-goals
 
 - This is **not** a battle simulator — Pokémon Showdown and Champions itself cover that space.
