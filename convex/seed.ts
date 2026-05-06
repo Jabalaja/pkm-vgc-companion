@@ -35,7 +35,9 @@ export const seedChampionsRegulation = internalMutation({
       startsAt: Date.UTC(2026, 3, 8),
       endsAt: Date.UTC(2026, 5, 17),
       isActive: true,
-      activeGimmicks: ["mega"] as const,
+      activeGimmicks: ["mega"] satisfies Array<
+        "mega" | "tera" | "z" | "dynamax"
+      >,
       legalSpecies,
       legalItems,
       restrictedAllowance: 1,

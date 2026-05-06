@@ -11,7 +11,7 @@ const regulation = {
   startsAt: 1,
   endsAt: 2,
   isActive: true,
-  activeGimmicks: ["mega"] as const,
+  activeGimmicks: ["mega"] satisfies Array<"mega" | "tera" | "z" | "dynamax">,
   legalSpecies: ["pikachu"],
   legalItems: ["lightball"],
   restrictedAllowance: 1,

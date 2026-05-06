@@ -16,7 +16,7 @@ function regulation(overrides?: Partial<{ code: string; isActive: boolean }>) {
     startsAt: 1,
     endsAt: 2,
     isActive: overrides?.isActive,
-    activeGimmicks: ["mega"] as const,
+    activeGimmicks: ["mega"] satisfies Array<"mega" | "tera" | "z" | "dynamax">,
     legalSpecies: ["pikachu"],
     legalItems: ["lightball"],
     restrictedAllowance: 1,

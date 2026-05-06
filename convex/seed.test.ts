@@ -4,6 +4,7 @@ import { convexTest } from "convex-test";
 import { makeFunctionReference } from "convex/server";
 import { describe, expect, it } from "vitest";
 
+import type { Id } from "./_generated/dataModel";
 import schema from "./schema";
 
 const modules = import.meta.glob("./**/*.ts");
@@ -18,7 +19,7 @@ function makeRegulation(code: string, isActive: boolean) {
     startsAt: 1,
     endsAt: 2,
     isActive,
-    activeGimmicks: ["mega"] as const,
+    activeGimmicks: ["mega"] satisfies Array<"mega" | "tera" | "z" | "dynamax">,
     legalSpecies: ["pikachu"],
     legalItems: ["lightball"],
     restrictedAllowance: 1,
@@ -29,10 +30,13 @@ describe("seed.seedChampionsRegulation", () => {
   it("inserts champions regulation when missing", async () => {
     const t = convexTest({ schema, modules });
 
-    const regulationId = await t.mutation(seedChampionsRegulation, {
-      legalSpecies: ["pikachu"],
-      legalItems: ["lightball"],
-    });
+    const regulationId: Id<"regulations"> = await t.mutation(
+      seedChampionsRegulation,
+      {
+        legalSpecies: ["pikachu"],
+        legalItems: ["lightball"],
+      },
+    );
     const stored = await t.query(async (ctx) => await ctx.db.get(regulationId));
 
     expect(stored?.code).toBe("champions-mega");
@@ -42,15 +46,21 @@ describe("seed.seedChampionsRegulation", () => {
   it("is idempotent and updates same champions row", async () => {
     const t = convexTest({ schema, modules });
 
-    const firstId = await t.mutation(seedChampionsRegulation, {
-      legalSpecies: ["pikachu", "pikachu"],
-      legalItems: ["lightball", "lightball"],
-    });
+    const firstId: Id<"regulations"> = await t.mutation(
+      seedChampionsRegulation,
+      {
+        legalSpecies: ["pikachu", "pikachu"],
+        legalItems: ["lightball", "lightball"],
+      },
+    );
 
-    const secondId = await t.mutation(seedChampionsRegulation, {
-      legalSpecies: ["bulbasaur", "bulbasaur", "pikachu"],
-      legalItems: ["sitrusberry", "sitrusberry"],
-    });
+    const secondId: Id<"regulations"> = await t.mutation(
+      seedChampionsRegulation,
+      {
+        legalSpecies: ["bulbasaur", "bulbasaur", "pikachu"],
+        legalItems: ["sitrusberry", "sitrusberry"],
+      },
+    );
 
     const stored = await t.query(async (ctx) => await ctx.db.get(secondId));
     expect(secondId).toBe(firstId);
@@ -60,7 +70,7 @@ describe("seed.seedChampionsRegulation", () => {
 
   it("demotes other active regulations", async () => {
     const t = convexTest({ schema, modules });
-    const activeOtherId = await t.mutation(async (ctx) => {
+    const activeOtherId: Id<"regulations"> = await t.mutation(async (ctx) => {
       return await ctx.db.insert("regulations", makeRegulation("other", true));
     });
 

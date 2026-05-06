@@ -4,6 +4,7 @@ import { convexTest } from "convex-test";
 import { makeFunctionReference } from "convex/server";
 import { describe, expect, it } from "vitest";
 
+import type { Id } from "./_generated/dataModel";
 import schema from "./schema";
 
 const modules = import.meta.glob("./**/*.ts");
@@ -19,7 +20,7 @@ function regulationDoc() {
     startsAt: 1,
     endsAt: 2,
     isActive: true,
-    activeGimmicks: ["mega"] as const,
+    activeGimmicks: ["mega"] satisfies Array<"mega" | "tera" | "z" | "dynamax">,
     legalSpecies: ["pikachu"],
     legalItems: ["lightball"],
     restrictedAllowance: 1,
@@ -29,7 +30,13 @@ function regulationDoc() {
 describe("teams.getOrCreateForRegulation", () => {
   it("returns existing team for a regulation", async () => {
     const t = convexTest({ schema, modules });
-    const { regulationId, teamId } = await t.mutation(async (ctx) => {
+    const {
+      regulationId,
+      teamId,
+    }: {
+      regulationId: Id<"regulations">;
+      teamId: Id<"teams">;
+    } = await t.mutation(async (ctx) => {
       const regulationId = await ctx.db.insert("regulations", regulationDoc());
       const teamId = await ctx.db.insert("teams", {
         name: "Existing Team",
@@ -46,22 +53,29 @@ describe("teams.getOrCreateForRegulation", () => {
 
   it("creates a team when none exists", async () => {
     const t = convexTest({ schema, modules });
-    const regulationId = await t.mutation(async (ctx) => {
+    const regulationId: Id<"regulations"> = await t.mutation(async (ctx) => {
       return await ctx.db.insert("regulations", regulationDoc());
     });
 
-    const teamId = await t.mutation(getOrCreateForRegulation, { regulationId });
+    const teamId: Id<"teams"> = await t.mutation(getOrCreateForRegulation, {
+      regulationId,
+    });
     const team = await t.query(async (ctx) => await ctx.db.get(teamId));
     expect(team?.name).toBe("New Team");
   });
 
   it("throws for an unknown regulation id", async () => {
     const t = convexTest({ schema, modules });
-    const deletedRegulationId = await t.mutation(async (ctx) => {
-      const regulationId = await ctx.db.insert("regulations", regulationDoc());
-      await ctx.db.delete(regulationId);
-      return regulationId;
-    });
+    const deletedRegulationId: Id<"regulations"> = await t.mutation(
+      async (ctx) => {
+        const regulationId = await ctx.db.insert(
+          "regulations",
+          regulationDoc(),
+        );
+        await ctx.db.delete(regulationId);
+        return regulationId;
+      },
+    );
 
     await expect(
       t.mutation(getOrCreateForRegulation, {
@@ -73,10 +87,13 @@ describe("teams.getOrCreateForRegulation", () => {
 
 describe("teams.addMember", () => {
   async function createTeam(t: ReturnType<typeof convexTest>) {
-    const regulationId = await t.mutation(async (ctx) => {
+    const regulationId: Id<"regulations"> = await t.mutation(async (ctx) => {
       return await ctx.db.insert("regulations", regulationDoc());
     });
-    return await t.mutation(getOrCreateForRegulation, { regulationId });
+    const teamId: Id<"teams"> = await t.mutation(getOrCreateForRegulation, {
+      regulationId,
+    });
+    return teamId;
   }
 
   it("adds a member with full input", async () => {
