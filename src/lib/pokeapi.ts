@@ -31,6 +31,11 @@ const specialCases: Record<string, string> = {
   typenull: "type-null",
 };
 
+/**
+ * Converts Showdown species slugs to PokeAPI slugs.
+ * Handles explicit oddballs (e.g. mrmime), common form suffixes
+ * (e.g. charizardmegax -> charizard-mega-x), and regional suffixes.
+ */
 export function showdownToPokeapiSlug(input: string): string {
   const normalized = input
     .trim()
@@ -66,11 +71,16 @@ export function showdownToPokeapiSlug(input: string): string {
     }
   }
 
+  // Best-effort fallback for numbered forms (e.g. porygon2 -> porygon-2).
   return normalized.replace(/([a-z])(\d)/g, "$1-$2");
 }
 
 const pokemonCache = new Map<string, Promise<PokeApiPokemon>>();
 
+/**
+ * Fetches Pokémon details from PokeAPI by Showdown slug and caches the promise
+ * for the normalized slug, so concurrent requests are deduplicated per session.
+ */
 export async function fetchPokemonBySlug(
   slug: string,
 ): Promise<PokeApiPokemon> {

@@ -3,14 +3,21 @@ import { Input } from "@/components/ui/input";
 import { useQuery } from "convex/react";
 import { useDeferredValue, useMemo, useState } from "react";
 
-export function PokemonSearch() {
-  const regulation = useQuery("regulations:getActive" as never) as
-    | {
-        _id: string;
-        legalSpecies: string[];
-      }
+type ActiveRegulation = {
+  _id: string;
+  legalSpecies: string[];
+};
+
+function useActiveRegulation() {
+  // Convex generated client types are not committed; use a localized cast.
+  return useQuery("regulations:getActive" as never) as
+    | ActiveRegulation
     | null
     | undefined;
+}
+
+export function PokemonSearch() {
+  const regulation = useActiveRegulation();
   const [query, setQuery] = useState("");
   const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
   const deferredQuery = useDeferredValue(query);

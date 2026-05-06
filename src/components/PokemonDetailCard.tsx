@@ -30,12 +30,13 @@ const defaultIvs = {
   spd: 31,
   spe: 31,
 };
+const defaultNature = "Hardy";
 
 function toLabel(value: string) {
   return value
     .split("-")
-    .filter(Boolean)
-    .map((part) => part[0]?.toUpperCase() + part.slice(1))
+    .filter((part) => part.length > 0)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(" ");
 }
 
@@ -61,6 +62,18 @@ type AddMember = (args: {
   };
 }) => Promise<unknown>;
 
+function useGetOrCreateForRegulationMutation() {
+  // Convex generated client types are not committed; use a localized cast.
+  return useMutation(
+    "teams:getOrCreateForRegulation" as never,
+  ) as unknown as GetOrCreateForRegulation;
+}
+
+function useAddMemberMutation() {
+  // Convex generated client types are not committed; use a localized cast.
+  return useMutation("teams:addMember" as never) as unknown as AddMember;
+}
+
 export function PokemonDetailCard({
   slug,
   regulationId,
@@ -68,12 +81,8 @@ export function PokemonDetailCard({
   const [mutationError, setMutationError] = useState<string | null>(null);
   const [addedName, setAddedName] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
-  const getOrCreateForRegulation = useMutation(
-    "teams:getOrCreateForRegulation" as never,
-  ) as unknown as GetOrCreateForRegulation;
-  const addMember = useMutation(
-    "teams:addMember" as never,
-  ) as unknown as AddMember;
+  const getOrCreateForRegulation = useGetOrCreateForRegulationMutation();
+  const addMember = useAddMemberMutation();
 
   const normalizedSlug = showdownToPokeapiSlug(slug);
   const { data, isLoading, error } = useQuery({
@@ -99,9 +108,9 @@ export function PokemonDetailCard({
     setIsAdding(true);
 
     try {
-      const primaryAbility = data.abilities[0]?.ability.name;
-      if (!primaryAbility) {
-        throw new Error(`No ability data available for "${name}"`);
+      const firstAbility = data.abilities[0]?.ability.name;
+      if (!firstAbility) {
+        throw new Error(`No ability data available for "${slug}"`);
       }
 
       const teamId = await getOrCreateForRegulation({ regulationId });
@@ -109,8 +118,8 @@ export function PokemonDetailCard({
         teamId,
         member: {
           species: slug,
-          ability: primaryAbility,
-          nature: "Hardy",
+          ability: firstAbility,
+          nature: defaultNature,
           moves: ["", "", "", ""],
           evs: defaultEvs,
           ivs: defaultIvs,
