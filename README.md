@@ -141,13 +141,13 @@ Auto-rebase of open PR branches against `main` was evaluated and skipped: the ex
 
 ## Data sources
 
-- Move, ability, item, and species data: a curated dataset aligned with the current Champions regulation
+- **PokeAPI** provides Pokémon detail data (sprites, types, abilities, base stats) at runtime. **Pokémon Showdown's public data dump** (`play.pokemonshowdown.com/data/*.json`) is consumed once via `pnpm seed:champions` to derive the active regulation's `legalSpecies` and `legalItems`.
 - Usage statistics: aggregated public ladder data (e.g. Pikalytics-compatible feeds)
 - Regulation rules: tracked manually against the [official Play! Pokémon resources](https://play.pokemon.com/en-us/resources/rules/?category=vgc)
 
 ## Status
 
-Phase-1 scaffold initialized. Tech stack frozen (see below). Next up: regulation + Pokémon data model in Convex, and the team-builder form on top of it.
+Phase-1 data model is live in Convex. The active Champions regulation (`champions-mega`) is seeded with legal species/items, and regulation/team-member mutations are in place for backend search-and-add flows. Next up is the search-and-add UI layer.
 
 ### Getting started
 
@@ -155,6 +155,7 @@ Phase-1 scaffold initialized. Tech stack frozen (see below). Next up: regulation
 pnpm install            # install dependencies
 pnpm dev                # start the Vite dev server
 pnpm convex:dev         # start the Convex dev backend (first run will prompt to create a deployment)
+pnpm seed:champions     # one-time, requires CONVEX_DEPLOY_KEY in env
 pnpm check              # Biome lint + format check
 pnpm test               # Vitest unit tests
 ```

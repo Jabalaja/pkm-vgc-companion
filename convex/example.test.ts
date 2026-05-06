@@ -8,6 +8,7 @@ const regulation = {
   name: "Champions Regulation I",
   startsAt: 1,
   endsAt: 2,
+  isActive: true,
   activeGimmicks: ["mega"] as const,
   legalSpecies: ["Pikachu"],
   legalItems: ["Light Ball"],
@@ -15,7 +16,7 @@ const regulation = {
 };
 
 const modules = {
-  ...import.meta.glob("./**/*.ts"),
+  ...import.meta.glob("./schema.ts"),
   "./_generated/api.ts": async () => ({}),
 };
 
@@ -61,5 +62,28 @@ describe("convex-test pattern", () => {
       "Champions Regulation II",
     ]);
     expect(regulationNames).toHaveLength(2);
+  });
+
+  it("allows regulations without isActive", async () => {
+    const t = convexTest({ modules });
+
+    const regulationId = await t.mutation(async (ctx) => {
+      return await ctx.db.insert("regulations", {
+        code: "CH-III",
+        name: "Champions Regulation III",
+        startsAt: 3,
+        endsAt: 4,
+        activeGimmicks: ["mega"],
+        legalSpecies: ["Bulbasaur"],
+        legalItems: ["Sitrus Berry"],
+        restrictedAllowance: 1,
+      });
+    });
+
+    const storedRegulation = await t.query(async (ctx) => {
+      return await ctx.db.get(regulationId);
+    });
+
+    expect(storedRegulation?.isActive).toBeUndefined();
   });
 });

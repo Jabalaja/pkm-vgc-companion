@@ -1,0 +1,135 @@
+import { ConvexError, v } from "convex/values";
+
+import { mutation } from "./_generated/server";
+
+const stats = v.object({
+  hp: v.number(),
+  atk: v.number(),
+  def: v.number(),
+  spa: v.number(),
+  spd: v.number(),
+  spe: v.number(),
+});
+
+const gimmickKind = v.union(
+  v.literal("mega"),
+  v.literal("tera"),
+  v.literal("z"),
+  v.literal("dynamax"),
+);
+
+const memberInput = v.object({
+  species: v.string(),
+  ability: v.string(),
+  item: v.optional(v.string()),
+  nature: v.optional(v.string()),
+  moves: v.optional(v.array(v.string())),
+  evs: v.optional(stats),
+  ivs: v.optional(stats),
+  gimmick: v.optional(
+    v.object({
+      kind: gimmickKind,
+      details: v.optional(v.string()),
+    }),
+  ),
+});
+
+const defaultEvs = {
+  hp: 0,
+  atk: 0,
+  def: 0,
+  spa: 0,
+  spd: 0,
+  spe: 0,
+};
+
+const defaultIvs = {
+  hp: 31,
+  atk: 31,
+  def: 31,
+  spa: 31,
+  spd: 31,
+  spe: 31,
+};
+
+const defaultMoves = ["", "", "", ""];
+
+export const getOrCreateForRegulation = mutation({
+  args: {
+    regulationId: v.id("regulations"),
+  },
+  handler: async (ctx, args) => {
+    const regulation = await ctx.db.get(args.regulationId);
+    if (!regulation) {
+      throw new ConvexError("Regulation not found");
+    }
+
+    const existing = await ctx.db
+      .query("teams")
+      .withIndex("by_regulation", (q) =>
+        q.eq("regulationId", args.regulationId),
+      )
+      .take(1);
+
+    if (existing[0]) {
+      return existing[0]._id;
+    }
+
+    return await ctx.db.insert("teams", {
+      name: "Champions Team",
+      regulationId: args.regulationId,
+      members: [],
+    });
+  },
+});
+
+export const addMember = mutation({
+  args: {
+    teamId: v.id("teams"),
+    member: memberInput,
+  },
+  handler: async (ctx, args) => {
+    const team = await ctx.db.get(args.teamId);
+    if (!team) {
+      throw new ConvexError("Team not found");
+    }
+
+    const regulation = await ctx.db.get(team.regulationId);
+    if (!regulation) {
+      throw new ConvexError("Regulation not found");
+    }
+
+    if (!regulation.legalSpecies.includes(args.member.species)) {
+      throw new ConvexError(
+        `Species "${args.member.species}" is not legal for regulation "${regulation.code}"`,
+      );
+    }
+
+    if (
+      args.member.gimmick &&
+      !regulation.activeGimmicks.includes(args.member.gimmick.kind)
+    ) {
+      throw new ConvexError(
+        `Gimmick "${args.member.gimmick.kind}" is not active for regulation "${regulation.code}"`,
+      );
+    }
+
+    await ctx.db.patch(team._id, {
+      members: [
+        ...team.members,
+        {
+          species: args.member.species,
+          ability: args.member.ability,
+          item: args.member.item,
+          nature: args.member.nature ?? "Hardy",
+          moves: args.member.moves ?? defaultMoves,
+          evs: args.member.evs ?? defaultEvs,
+          ivs: args.member.ivs ?? defaultIvs,
+          gimmick: args.member.gimmick,
+        },
+      ],
+    });
+
+    return team._id;
+  },
+});

@@ -23,6 +23,7 @@ export default defineSchema({
     name: v.string(),
     startsAt: v.number(),
     endsAt: v.number(),
+    isActive: v.optional(v.boolean()),
     activeGimmicks: v.array(gimmickKind),
     legalSpecies: v.array(v.string()),
     legalItems: v.array(v.string()),
