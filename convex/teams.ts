@@ -1,22 +1,7 @@
 import { ConvexError, v } from "convex/values";
 
 import { mutation } from "./_generated/server";
-
-const stats = v.object({
-  hp: v.number(),
-  atk: v.number(),
-  def: v.number(),
-  spa: v.number(),
-  spd: v.number(),
-  spe: v.number(),
-});
-
-const gimmickKind = v.union(
-  v.literal("mega"),
-  v.literal("tera"),
-  v.literal("z"),
-  v.literal("dynamax"),
-);
+import { gimmickKind, stats } from "./schema";
 
 const memberInput = v.object({
   species: v.string(),
@@ -111,6 +96,12 @@ export const addMember = mutation({
     ) {
       throw new ConvexError(
         `Gimmick "${args.member.gimmick.kind}" is not active for regulation "${regulation.code}"`,
+      );
+    }
+
+    if (args.member.item && !regulation.legalItems.includes(args.member.item)) {
+      throw new ConvexError(
+        `Item "${args.member.item}" is not legal for regulation "${regulation.code}"`,
       );
     }
 

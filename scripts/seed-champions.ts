@@ -10,6 +10,10 @@ type ShowdownItemEntry = {
   isNonstandard?: string;
 };
 
+type AdminAuthCapableClient = ConvexHttpClient & {
+  setAdminAuth?: (token: string) => void;
+};
+
 const SHOWDOWN_BASE_URL = "https://play.pokemonshowdown.com/data";
 
 async function fetchJson<T>(path: string): Promise<T> {
@@ -18,6 +22,16 @@ async function fetchJson<T>(path: string): Promise<T> {
     throw new Error(`Failed to fetch ${path}: ${response.status}`);
   }
   return (await response.json()) as T;
+}
+
+function setAdminAuthOrThrow(client: ConvexHttpClient, token: string) {
+  const adminClient = client as AdminAuthCapableClient;
+  if (typeof adminClient.setAdminAuth !== "function") {
+    throw new Error(
+      "ConvexHttpClient#setAdminAuth is unavailable; update convex dependency or use supported admin auth setup",
+    );
+  }
+  adminClient.setAdminAuth(token);
 }
 
 async function main() {
@@ -60,11 +74,7 @@ async function main() {
     .sort();
 
   const client = new ConvexHttpClient(deploymentUrl);
-  (
-    client as unknown as {
-      setAdminAuth: (token: string) => void;
-    }
-  ).setAdminAuth(deployKey);
+  setAdminAuthOrThrow(client, deployKey);
 
   await client.mutation(
     makeFunctionReference<"mutation">("seed:seedChampionsRegulation"),

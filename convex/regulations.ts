@@ -5,10 +5,12 @@ import { query } from "./_generated/server";
 export const getActive = query({
   args: {},
   handler: async (ctx) => {
-    const regulations = await ctx.db.query("regulations").take(100);
-    const activeRegulations = regulations.filter(
-      (regulation) => regulation.isActive === true,
-    );
+    const activeRegulations = [];
+    for await (const regulation of ctx.db.query("regulations")) {
+      if (regulation.isActive === true) {
+        activeRegulations.push(regulation);
+      }
+    }
 
     if (activeRegulations.length > 1) {
       throw new ConvexError("Multiple active regulations found");

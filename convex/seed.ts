@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 
+import type { Id } from "./_generated/dataModel";
 import { internalMutation } from "./_generated/server";
 
 export const seedChampionsRegulation = internalMutation({
@@ -8,29 +9,40 @@ export const seedChampionsRegulation = internalMutation({
     legalItems: v.array(v.string()),
   },
   handler: async (ctx, args) => {
-    const regulations = await ctx.db.query("regulations").take(100);
+    const legalSpecies = Array.from(new Set(args.legalSpecies));
+    const legalItems = Array.from(new Set(args.legalItems));
+    const championsRegulations: Id<"regulations">[] = [];
 
-    for (const regulation of regulations) {
+    for await (const regulation of ctx.db.query("regulations")) {
       if (regulation.code === "champions-mega") {
-        await ctx.db.delete(regulation._id);
-        continue;
-      }
-
-      if (regulation.isActive) {
+        championsRegulations.push(regulation._id);
+        if (regulation.isActive) {
+          await ctx.db.patch(regulation._id, { isActive: false });
+        }
+      } else if (regulation.isActive) {
         await ctx.db.patch(regulation._id, { isActive: false });
       }
     }
 
-    return await ctx.db.insert("regulations", {
+    const championsRegulation = {
       code: "champions-mega",
       name: "Champions — Set M-A",
       startsAt: Date.UTC(2026, 3, 8),
       endsAt: Date.UTC(2026, 5, 17),
       isActive: true,
       activeGimmicks: ["mega"],
-      legalSpecies: Array.from(new Set(args.legalSpecies)),
-      legalItems: Array.from(new Set(args.legalItems)),
+      legalSpecies,
+      legalItems,
       restrictedAllowance: 1,
+    } as const;
+
+    if (championsRegulations[0]) {
+      await ctx.db.patch(championsRegulations[0], championsRegulation);
+      return championsRegulations[0];
+    }
+
+    return await ctx.db.insert("regulations", {
+      ...championsRegulation,
     });
   },
 });

@@ -1,14 +1,14 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
-const gimmickKind = v.union(
+export const gimmickKind = v.union(
   v.literal("mega"),
   v.literal("tera"),
   v.literal("z"),
   v.literal("dynamax"),
 );
 
-const stats = v.object({
+export const stats = v.object({
   hp: v.number(),
   atk: v.number(),
   def: v.number(),
