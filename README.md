@@ -147,7 +147,7 @@ Auto-rebase of open PR branches against `main` was evaluated and skipped: the ex
 
 ## Status
 
-Phase-1 data model is live in Convex. The active Champions regulation (`champions-mega`) is seeded with legal species/items, and regulation/team-member mutations are in place for backend search-and-add flows. Next up is the search-and-add UI layer.
+Phase-1 MVP shipped: regulation seeded, Pokémon search, and add-to-team flow on the home route. Next up: Phase-2 multi-team management.
 
 ### Getting started
 
@@ -156,6 +156,7 @@ pnpm install            # install dependencies
 pnpm dev                # start the Vite dev server
 pnpm convex:dev         # start the Convex dev backend (first run will prompt to create a deployment)
 pnpm seed:champions     # one-time, requires .env.local with VITE_CONVEX_URL (CONVEX_DEPLOY_KEY optional)
+                       # optional: set VITE_POKEAPI_BASE_URL (defaults to https://pokeapi.co/api/v2)
 pnpm check              # Biome lint + format check
 pnpm test               # Vitest unit tests
 ```
