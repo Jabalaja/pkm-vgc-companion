@@ -47,6 +47,14 @@ async function fetchText(path: string): Promise<string> {
   return await response.text();
 }
 
+function unescapeQuotedString(value: string): string {
+  return value.replace(/\\'/g, "'").replace(/\\"/g, '"');
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 function extractExportObject(source: string, exportName: string): string {
   const assignmentStart = source.search(
     new RegExp(`exports\\.${escapeRegExp(exportName)}\\s*=\\s*\\{`),
@@ -98,11 +106,20 @@ function extractExportObject(source: string, exportName: string): string {
   throw new Error(`Could not find object closing brace for ${exportName}`);
 }
 
+function assertSafeObjectLiteral(objectLiteral: string): void {
+  const disallowedPattern =
+    /[`]|(?:^|[^\w$])(function|import|export|require|process|globalThis|global|window|constructor|prototype|__proto__)(?:[^\w$]|$)|=>|new\s+|[()]/;
+  if (disallowedPattern.test(objectLiteral)) {
+    throw new Error("Showdown export contains unsupported syntax");
+  }
+}
+
 export function parseShowdownExportObject<T extends Record<string, unknown>>(
   source: string,
   exportName: string,
 ): T {
   const exportObject = extractExportObject(source, exportName);
+  assertSafeObjectLiteral(exportObject);
   const parsed = vm.runInNewContext(`(${exportObject})`, {}, { timeout: 1000 });
   if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
     throw new Error(`exports.${exportName} is not an object`);
@@ -116,14 +133,6 @@ async function fetchShowdownExport<T extends Record<string, unknown>>(
 ): Promise<T> {
   const source = await fetchText(path);
   return parseShowdownExportObject<T>(source, exportName);
-}
-
-function unescapeQuotedString(value: string): string {
-  return value.replace(/\\'/g, "'").replace(/\\"/g, '"');
-}
-
-function escapeRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 function readQuotedStrings(source: string): string[] {

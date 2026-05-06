@@ -50,4 +50,13 @@ describe("seed-champions helpers", () => {
     expect(parsed.abilityshield?.name).toBe("Ability Shield");
     expect(parsed.leftovers?.name).toBe("Leftovers");
   });
+
+  it("rejects unsupported syntax when parsing export objects", () => {
+    expect(() => {
+      parseShowdownExportObject(
+        `exports.BattleItems = { sneaky: (() => "x")() };`,
+        "BattleItems",
+      );
+    }).toThrow("unsupported syntax");
+  });
 });
