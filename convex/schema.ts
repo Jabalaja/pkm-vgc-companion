@@ -27,7 +27,7 @@ export default defineSchema({
     legalSpecies: v.array(v.string()),
     legalItems: v.array(v.string()),
     restrictedAllowance: v.number(),
-  }).index("by_code", ["code"]),
+  }).index("by_code", ["code"]).index("by_code", ["name"]),
 
   teams: defineTable({
     name: v.string(),
