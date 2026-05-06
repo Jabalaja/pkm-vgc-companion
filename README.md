@@ -118,7 +118,7 @@ These are the only project-wide brand color tokens. Neutral colors continue to u
 
 ### Future CI/CD enhancements
 
-The current CI runs lint, Convex schema validation (`convex deploy --dry-run`), build/typecheck, and unit tests on every PR. The following are deliberately deferred until they pay off:
+The current CI runs lint, Convex schema validation (push to an ephemeral preview deployment), build/typecheck, and unit tests on every PR. The following are deliberately deferred until they pay off:
 
 - **End-to-end tests (Playwright).** Add once Phase 1 ships a real team-builder flow worth covering across browsers. Until then, E2E setup outweighs the value.
 - **Visual regression (Storybook + Chromatic or Percy).** Add when the repo grows its own component library beyond the shadcn defaults. With only shadcn primitives in source, snapshots would cover library code we did not author.

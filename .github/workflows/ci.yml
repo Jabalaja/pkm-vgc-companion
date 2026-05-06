@@ -25,10 +25,10 @@ jobs:
       - name: Lint and format check
         run: pnpm check
 
-      - name: Convex schema validation (dry-run, no push)
+      - name: Convex schema validation (push to ephemeral preview)
         env:
           CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
-        run: pnpm exec convex deploy --dry-run --typecheck=disable
+        run: pnpm exec convex deploy --typecheck=disable
 
       - name: Build (generates routeTree, then type-checks)
         run: pnpm build
