@@ -110,8 +110,11 @@ export const addMember = mutation({
     }
 
     const moves = args.member.moves ?? defaultMoves;
-    if (moves.length === 0 || moves.some((move) => move.length === 0)) {
+    if (moves.length === 0) {
       throw new ConvexError("Member must have at least one move");
+    }
+    if (moves.some((move) => move.length === 0)) {
+      throw new ConvexError("Move names cannot be empty");
     }
 
     await ctx.db.patch(team._id, {

@@ -203,4 +203,21 @@ describe("teams.addMember", () => {
       }),
     ).rejects.toThrowError("Member must have at least one move");
   });
+
+  it("rejects empty move names", async () => {
+    const t = convexTest({ schema, modules });
+    const teamId = await createTeam(t);
+
+    await expect(
+      t.mutation(addMember, {
+        teamId,
+        member: {
+          species: "pikachu",
+          ability: "static",
+          item: "lightball",
+          moves: [""],
+        },
+      }),
+    ).rejects.toThrowError("Move names cannot be empty");
+  });
 });

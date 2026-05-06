@@ -29,7 +29,9 @@ const SHOWDOWN_BASE_URL = "https://play.pokemonshowdown.com/data";
 async function fetchJson<T>(path: string): Promise<T> {
   const response = await fetch(`${SHOWDOWN_BASE_URL}/${path}`);
   if (!response.ok) {
-    throw new Error(`Failed to fetch ${path}: ${response.status}`);
+    throw new Error(
+      `Failed to fetch ${path}: ${response.status} ${response.statusText}`,
+    );
   }
   return (await response.json()) as T;
 }
@@ -37,9 +39,19 @@ async function fetchJson<T>(path: string): Promise<T> {
 async function fetchText(path: string): Promise<string> {
   const response = await fetch(`${SHOWDOWN_BASE_URL}/${path}`);
   if (!response.ok) {
-    throw new Error(`Failed to fetch ${path}: ${response.status}`);
+    throw new Error(
+      `Failed to fetch ${path}: ${response.status} ${response.statusText}`,
+    );
   }
   return await response.text();
+}
+
+function unescapeQuotedString(value: string): string {
+  return value.replace(/\\'/g, "'").replace(/\\"/g, '"');
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 function readQuotedStrings(source: string): string[] {
@@ -47,9 +59,7 @@ function readQuotedStrings(source: string): string[] {
   const pattern = /"([^"\\]*(?:\\.[^"\\]*)*)"|'([^'\\]*(?:\\.[^'\\]*)*)'/g;
   let match: RegExpExecArray | null = pattern.exec(source);
   while (match) {
-    values.push(
-      (match[1] ?? match[2] ?? "").replace(/\\'/g, "'").replace(/\\"/g, '"'),
-    );
+    values.push(unescapeQuotedString(match[1] ?? match[2] ?? ""));
     match = pattern.exec(source);
   }
   return values;
@@ -147,21 +157,23 @@ function extractStringProperty(
   objectSource: string,
   property: string,
 ): string | undefined {
+  const safeProperty = escapeRegExp(property);
   const pattern = new RegExp(
-    `${property}\\s*:\\s*("([^"\\\\]*(?:\\\\.[^"\\\\]*)*)"|'([^'\\\\]*(?:\\\\.[^'\\\\]*)*)')`,
+    `${safeProperty}\\s*:\\s*("([^"\\\\]*(?:\\\\.[^"\\\\]*)*)"|'([^'\\\\]*(?:\\\\.[^'\\\\]*)*)')`,
   );
   const match = objectSource.match(pattern);
   if (!match) {
     return undefined;
   }
-  return (match[2] ?? match[3] ?? "").replace(/\\'/g, "'").replace(/\\"/g, '"');
+  return unescapeQuotedString(match[2] ?? match[3] ?? "");
 }
 
 function extractStringArrayProperty(
   objectSource: string,
   property: string,
 ): string[] | undefined {
-  const pattern = new RegExp(`${property}\\s*:\\s*\\[([\\s\\S]*?)\\]`);
+  const safeProperty = escapeRegExp(property);
+  const pattern = new RegExp(`${safeProperty}\\s*:\\s*\\[([\\s\\S]*?)\\]`);
   const match = objectSource.match(pattern);
   if (!match) {
     return undefined;

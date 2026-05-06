@@ -28,7 +28,7 @@ export const seedChampionsRegulation = internalMutation({
       }
     }
 
-    // Source: https://www.pokemon.com/us/play-pokemon/about/tournaments-rules-and-resources/
+    // Source for Regulation M dates (champions-mega): https://www.pokemon.com/us/play-pokemon/about/tournaments-rules-and-resources/
     const championsRegulation = {
       code: "champions-mega",
       name: "Champions — Set M-A",
