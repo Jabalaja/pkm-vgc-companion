@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   deriveLegalItems,
   deriveLegalSpecies,
-  parseShowdownExportObject,
+  parseShowdownItems,
 } from "./seed-champions";
 
 describe("seed-champions helpers", () => {
@@ -39,24 +39,14 @@ describe("seed-champions helpers", () => {
   });
 
   it("parses BattleItems export from Showdown items.js source", () => {
-    const parsed = parseShowdownExportObject<Record<string, { name: string }>>(
-      `exports.BattleItems = {
-        abilityshield: {name: "Ability Shield"},
-        leftovers: {name: "Leftovers"},
-      };`,
-      "BattleItems",
-    );
+    const parsed = parseShowdownItems(`exports.BattleItems = {
+      abilityshield: {name: "Ability Shield"},
+      leftovers: {name: "Leftovers", isNonstandard: "Past"},
+      testitem: {name: "Test Item", flags: {nonsense: true}},
+    };`);
 
-    expect(parsed.abilityshield?.name).toBe("Ability Shield");
-    expect(parsed.leftovers?.name).toBe("Leftovers");
-  });
-
-  it("rejects unsupported syntax when parsing export objects", () => {
-    expect(() => {
-      parseShowdownExportObject(
-        `exports.BattleItems = { sneaky: (() => "x")() };`,
-        "BattleItems",
-      );
-    }).toThrow("unsupported syntax");
+    expect(parsed.abilityshield?.isNonstandard).toBeUndefined();
+    expect(parsed.leftovers?.isNonstandard).toBe("Past");
+    expect(parsed.testitem?.isNonstandard).toBeUndefined();
   });
 });

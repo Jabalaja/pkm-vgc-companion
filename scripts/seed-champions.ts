@@ -1,13 +1,11 @@
 import { execFileSync } from "node:child_process";
 import { pathToFileURL } from "node:url";
-import vm from "node:vm";
 
 import { toShowdownId } from "../convex/lib/showdownId";
 
 // Source of truth: Showdown format `gen9vgc2026regulationm` in formats.js.
 // Update SHOWDOWN_CHAMPIONS_FORMAT_ID when Champions moves to the next regulation.
 const SHOWDOWN_CHAMPIONS_FORMAT_ID = "gen9vgc2026regulationm";
-const SHOWDOWN_OBJECT_PARSE_TIMEOUT_MS = 1000;
 
 type ShowdownItemEntry = {
   isNonstandard?: string;
@@ -107,42 +105,169 @@ function extractExportObject(source: string, exportName: string): string {
   throw new Error(`Could not find object closing brace for ${exportName}`);
 }
 
-function assertSafeObjectLiteral(objectLiteral: string): void {
-  // Showdown data exports are expected to be plain object literals. We reject
-  // executable syntax (functions, template literals, calls, constructors, etc.)
-  // before evaluating the isolated object literal.
-  const disallowedPattern =
-    /[`]|(?:^|[^\w$])(function|import|export|require|process|globalThis|global|window|constructor|prototype|__proto__)(?:[^\w$]|$)|=>|new\s+|[()]/;
-  if (disallowedPattern.test(objectLiteral)) {
-    throw new Error("Showdown export contains unsupported syntax");
-  }
-}
-
-export function parseShowdownExportObject<T extends Record<string, unknown>>(
+function readObjectLiteral(
   source: string,
-  exportName: string,
-): T {
-  const exportObject = extractExportObject(source, exportName);
-  assertSafeObjectLiteral(exportObject);
-  const parsed = vm.runInNewContext(
-    `(${exportObject})`,
-    {},
-    {
-      timeout: SHOWDOWN_OBJECT_PARSE_TIMEOUT_MS,
-    },
-  );
-  if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
-    throw new Error(`exports.${exportName} is not an object`);
+  startIndex: number,
+): {
+  value: string;
+  endIndex: number;
+} {
+  if (source[startIndex] !== "{") {
+    throw new Error(`Expected object literal at position ${startIndex}`);
   }
-  return parsed as T;
+
+  let inString: "'" | '"' | null = null;
+  let escaped = false;
+  let depth = 0;
+
+  for (let i = startIndex; i < source.length; i += 1) {
+    const char = source[i];
+    if (inString) {
+      if (escaped) {
+        escaped = false;
+      } else if (char === "\\") {
+        escaped = true;
+      } else if (char === inString) {
+        inString = null;
+      }
+      continue;
+    }
+
+    if (char === "'" || char === '"') {
+      inString = char;
+      continue;
+    }
+    if (char === "{") {
+      depth += 1;
+      continue;
+    }
+    if (char === "}") {
+      depth -= 1;
+      if (depth === 0) {
+        return {
+          value: source.slice(startIndex, i + 1),
+          endIndex: i + 1,
+        };
+      }
+    }
+  }
+
+  throw new Error("Could not find object literal closing brace");
 }
 
-async function fetchShowdownExport<T extends Record<string, unknown>>(
+function extractTopLevelObjectEntries(
+  objectSource: string,
+): Array<{ key: string; valueSource: string }> {
+  if (!objectSource.startsWith("{") || !objectSource.endsWith("}")) {
+    throw new Error("Expected object source wrapped in braces");
+  }
+
+  const entries: Array<{ key: string; valueSource: string }> = [];
+  const source = objectSource.slice(1, -1);
+  let index = 0;
+
+  while (index < source.length) {
+    while (
+      index < source.length &&
+      [",", " ", "\n", "\r", "\t"].includes(source[index])
+    ) {
+      index += 1;
+    }
+    if (index >= source.length) {
+      break;
+    }
+
+    const keyMatch = source
+      .slice(index)
+      .match(
+        /^("([^"\\]*(?:\\.[^"\\]*)*)"|'([^'\\]*(?:\\.[^'\\]*)*)'|[A-Za-z0-9_]+)/,
+      );
+    if (!keyMatch) {
+      throw new Error(`Could not parse object key near index ${index}`);
+    }
+    const rawKey = keyMatch[1];
+    const key =
+      rawKey.startsWith('"') || rawKey.startsWith("'")
+        ? unescapeQuotedString(rawKey.slice(1, -1))
+        : rawKey;
+    index += rawKey.length;
+
+    while (index < source.length && /\s/.test(source[index])) {
+      index += 1;
+    }
+    if (source[index] !== ":") {
+      throw new Error(`Missing ":" after key "${key}"`);
+    }
+    index += 1;
+    while (index < source.length && /\s/.test(source[index])) {
+      index += 1;
+    }
+
+    const { valueSource, nextIndex } = (() => {
+      if (source[index] === "{") {
+        const { value, endIndex } = readObjectLiteral(source, index);
+        return { valueSource: value, nextIndex: endIndex };
+      }
+
+      let endIndex = index;
+      let inString: "'" | '"' | null = null;
+      let escaped = false;
+      while (endIndex < source.length) {
+        const char = source[endIndex];
+        if (inString) {
+          if (escaped) {
+            escaped = false;
+          } else if (char === "\\") {
+            escaped = true;
+          } else if (char === inString) {
+            inString = null;
+          }
+          endIndex += 1;
+          continue;
+        }
+
+        if (char === "'" || char === '"') {
+          inString = char;
+          endIndex += 1;
+          continue;
+        }
+        if (char === ",") {
+          break;
+        }
+        endIndex += 1;
+      }
+      return {
+        valueSource: source.slice(index, endIndex).trim(),
+        nextIndex: endIndex,
+      };
+    })();
+
+    entries.push({ key: toShowdownId(key), valueSource });
+    index = nextIndex;
+  }
+
+  return entries;
+}
+
+export function parseShowdownItems(
+  source: string,
+): Record<string, ShowdownItemEntry> {
+  const battleItemsObject = extractExportObject(source, "BattleItems");
+  const entries = extractTopLevelObjectEntries(battleItemsObject);
+  const items: Record<string, ShowdownItemEntry> = {};
+  for (const { key, valueSource } of entries) {
+    items[key] = {
+      isNonstandard: extractStringProperty(valueSource, "isNonstandard"),
+    };
+  }
+  return items;
+}
+
+async function fetchShowdownItems(
   path: string,
-  exportName: string,
-): Promise<T> {
+): Promise<Record<string, ShowdownItemEntry>> {
   const source = await fetchText(path);
-  return parseShowdownExportObject<T>(source, exportName);
+  return parseShowdownItems(source);
 }
 
 function readQuotedStrings(source: string): string[] {
@@ -446,10 +571,7 @@ async function main() {
 
   const [pokedex, items, formatsSource] = await Promise.all([
     fetchJson<Record<string, ShowdownPokedexEntry>>("pokedex.json"),
-    fetchShowdownExport<Record<string, ShowdownItemEntry>>(
-      "items.js",
-      "BattleItems",
-    ),
+    fetchShowdownItems("items.js"),
     fetchText("formats.js"),
   ]);
   const rules = collectFormatRules(
