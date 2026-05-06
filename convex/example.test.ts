@@ -2,9 +2,6 @@
 
 import { convexTest } from "convex-test";
 import { describe, expect, it } from "vitest";
-import schema from "./schema";
-
-const modules = import.meta.glob("./**/*.ts");
 
 const regulation = {
   code: "CH-I",
@@ -17,9 +14,14 @@ const regulation = {
   restrictedAllowance: 1,
 };
 
+const modules = {
+  ...import.meta.glob("./**/*.ts"),
+  "./_generated/api.ts": async () => ({}),
+};
+
 describe("convex-test pattern", () => {
   it("writes and reads regulation documents", async () => {
-    const t = convexTest(schema, modules);
+    const t = convexTest({ modules });
 
     const regulationId = await t.mutation(async (ctx) => {
       return await ctx.db.insert("regulations", regulation);
@@ -34,7 +36,7 @@ describe("convex-test pattern", () => {
   });
 
   it("queries inserted regulations", async () => {
-    const t = convexTest(schema, modules);
+    const t = convexTest({ modules });
 
     await t.mutation(async (ctx) => {
       await ctx.db.insert("regulations", {

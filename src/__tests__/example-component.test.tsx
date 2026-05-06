@@ -19,7 +19,9 @@ function ConvexStatus() {
 function CounterButton() {
   const [count, setCount] = useState(0);
   return (
-    <Button onClick={() => setCount((current) => current + 1)}>{`Count: ${count}`}</Button>
+    <Button
+      onClick={() => setCount((current) => current + 1)}
+    >{`Count: ${count}`}</Button>
   );
 }
 
@@ -39,6 +41,8 @@ describe("example component patterns", () => {
     render(<CounterButton />);
 
     await user.click(screen.getByRole("button", { name: "Count: 0" }));
-    expect(screen.getByRole("button", { name: "Count: 1" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Count: 1" }),
+    ).toBeInTheDocument();
   });
 });
