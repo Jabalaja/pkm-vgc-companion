@@ -7,6 +7,7 @@ import { toShowdownId } from "../convex/lib/showdownId";
 // Source of truth: Showdown format `gen9vgc2026regulationm` in formats.js.
 // Update SHOWDOWN_CHAMPIONS_FORMAT_ID when Champions moves to the next regulation.
 const SHOWDOWN_CHAMPIONS_FORMAT_ID = "gen9vgc2026regulationm";
+const SHOWDOWN_OBJECT_PARSE_TIMEOUT_MS = 1000;
 
 type ShowdownItemEntry = {
   isNonstandard?: string;
@@ -107,6 +108,9 @@ function extractExportObject(source: string, exportName: string): string {
 }
 
 function assertSafeObjectLiteral(objectLiteral: string): void {
+  // Showdown data exports are expected to be plain object literals. We reject
+  // executable syntax (functions, template literals, calls, constructors, etc.)
+  // before evaluating the isolated object literal.
   const disallowedPattern =
     /[`]|(?:^|[^\w$])(function|import|export|require|process|globalThis|global|window|constructor|prototype|__proto__)(?:[^\w$]|$)|=>|new\s+|[()]/;
   if (disallowedPattern.test(objectLiteral)) {
@@ -120,7 +124,13 @@ export function parseShowdownExportObject<T extends Record<string, unknown>>(
 ): T {
   const exportObject = extractExportObject(source, exportName);
   assertSafeObjectLiteral(exportObject);
-  const parsed = vm.runInNewContext(`(${exportObject})`, {}, { timeout: 1000 });
+  const parsed = vm.runInNewContext(
+    `(${exportObject})`,
+    {},
+    {
+      timeout: SHOWDOWN_OBJECT_PARSE_TIMEOUT_MS,
+    },
+  );
   if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
     throw new Error(`exports.${exportName} is not an object`);
   }
