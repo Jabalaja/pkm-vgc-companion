@@ -25,7 +25,8 @@ jobs:
       - name: Lint and format check
         run: pnpm check
 
-      - name: Convex schema validation (push to ephemeral preview)
+      - name: Convex schema validation (per-PR ephemeral preview)
+        if: github.event_name == 'pull_request'
         env:
           CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
         run: pnpm exec convex deploy --typecheck=disable
