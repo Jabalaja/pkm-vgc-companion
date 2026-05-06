@@ -99,12 +99,17 @@ export function PokemonDetailCard({
     setIsAdding(true);
 
     try {
+      const primaryAbility = data.abilities[0]?.ability.name;
+      if (!primaryAbility) {
+        throw new Error(`No ability data available for "${name}"`);
+      }
+
       const teamId = await getOrCreateForRegulation({ regulationId });
       await addMember({
         teamId,
         member: {
           species: slug,
-          ability: data.abilities[0]?.ability.name ?? "unknown",
+          ability: primaryAbility,
           nature: "Hardy",
           moves: ["", "", "", ""],
           evs: defaultEvs,
