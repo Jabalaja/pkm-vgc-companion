@@ -160,6 +160,17 @@ pnpm check              # Biome lint + format check
 pnpm test               # Vitest unit tests
 ```
 
+### Deployment (Phase 1)
+
+Convex distinguishes three deployment tiers. This project uses them as follows:
+
+- **Local dev**: per-developer Convex dev deployment created by `pnpm convex:dev`. Each contributor has their own; `VITE_CONVEX_URL` lives in `.env.local` (gitignored).
+- **`main` branch**: long-lived Convex *preview* deployment named `main`. Auto-deployed on every push to `main` by [`.github/workflows/deploy-main.yml`](.github/workflows/deploy-main.yml). This is the canonical Phase-1 testing backend — the URL is stable and reflects the latest merged state.
+- **Pull requests**: per-PR ephemeral Convex preview deployments, created by the schema-validation step in [`.github/workflows/ci.yml`](.github/workflows/ci.yml). They auto-expire when the PR closes.
+- **Convex `production`**: deliberately unused. Reserved for a future explicit launch process (release tags or a `master` branch).
+
+Both workflows authenticate with a `preview:`-prefixed `CONVEX_DEPLOY_KEY`, configured as a GitHub Actions secret.
+
 ## Prior art
 
 These tools inspired the scope and set the bar:
