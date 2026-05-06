@@ -8,7 +8,7 @@
     "build": "vite build && tsc -b --noEmit",
     "preview": "vite preview",
     "convex:dev": "convex dev",
-    "seed:champions": "tsx scripts/seed-champions.ts",
+    "seed:champions": "tsx --env-file=.env.local scripts/seed-champions.ts",
     "check": "biome check .",
     "format": "biome format --write .",
     "lint": "biome lint .",

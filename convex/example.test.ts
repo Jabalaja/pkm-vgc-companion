@@ -3,6 +3,8 @@
 import { convexTest } from "convex-test";
 import { describe, expect, it } from "vitest";
 
+import schema from "./schema";
+
 const regulation = {
   code: "CH-I",
   name: "Champions Regulation I",
@@ -10,19 +12,18 @@ const regulation = {
   endsAt: 2,
   isActive: true,
   activeGimmicks: ["mega"] as const,
-  legalSpecies: ["Pikachu"],
-  legalItems: ["Light Ball"],
+  legalSpecies: ["pikachu"],
+  legalItems: ["lightball"],
   restrictedAllowance: 1,
 };
 
 const modules = {
-  ...import.meta.glob("./schema.ts"),
-  "./_generated/api.ts": async () => ({}),
+  ...import.meta.glob("./**/*.ts"),
 };
 
 describe("convex-test pattern", () => {
   it("writes and reads regulation documents", async () => {
-    const t = convexTest({ modules });
+    const t = convexTest({ schema, modules });
 
     const regulationId = await t.mutation(async (ctx) => {
       return await ctx.db.insert("regulations", regulation);
@@ -37,7 +38,7 @@ describe("convex-test pattern", () => {
   });
 
   it("queries inserted regulations", async () => {
-    const t = convexTest({ modules });
+    const t = convexTest({ schema, modules });
 
     await t.mutation(async (ctx) => {
       await ctx.db.insert("regulations", {
@@ -65,7 +66,7 @@ describe("convex-test pattern", () => {
   });
 
   it("allows regulations without isActive", async () => {
-    const t = convexTest({ modules });
+    const t = convexTest({ schema, modules });
 
     const regulationId = await t.mutation(async (ctx) => {
       return await ctx.db.insert("regulations", {
@@ -74,8 +75,8 @@ describe("convex-test pattern", () => {
         startsAt: 3,
         endsAt: 4,
         activeGimmicks: ["mega"],
-        legalSpecies: ["Bulbasaur"],
-        legalItems: ["Sitrus Berry"],
+        legalSpecies: ["bulbasaur"],
+        legalItems: ["sitrusberry"],
         restrictedAllowance: 1,
       });
     });

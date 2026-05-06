@@ -37,7 +37,7 @@ const defaultIvs = {
   spe: 31,
 };
 
-const defaultMoves = ["", "", "", ""];
+const defaultMoves: string[] = [];
 
 export const getOrCreateForRegulation = mutation({
   args: {
@@ -61,7 +61,7 @@ export const getOrCreateForRegulation = mutation({
     }
 
     return await ctx.db.insert("teams", {
-      name: "Champions Team",
+      name: "New Team",
       regulationId: args.regulationId,
       members: [],
     });
@@ -105,6 +105,15 @@ export const addMember = mutation({
       );
     }
 
+    if (team.members.length >= 6) {
+      throw new ConvexError("Team already has the maximum of 6 members");
+    }
+
+    const moves = args.member.moves ?? defaultMoves;
+    if (moves.length < 1 || moves.some((move) => move.length === 0)) {
+      throw new ConvexError("Member must have at least one move");
+    }
+
     await ctx.db.patch(team._id, {
       members: [
         ...team.members,
@@ -113,7 +122,7 @@ export const addMember = mutation({
           ability: args.member.ability,
           item: args.member.item,
           nature: args.member.nature ?? "Hardy",
-          moves: args.member.moves ?? defaultMoves,
+          moves,
           evs: args.member.evs ?? defaultEvs,
           ivs: args.member.ivs ?? defaultIvs,
           gimmick: args.member.gimmick,

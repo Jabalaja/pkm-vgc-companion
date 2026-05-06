@@ -23,21 +23,19 @@ export const seedChampionsRegulation = internalMutation({
         if (!existingChampionsId) {
           existingChampionsId = regulation._id;
         }
-        if (regulation.isActive) {
-          await ctx.db.patch(regulation._id, { isActive: false });
-        }
       } else if (regulation.isActive) {
         await ctx.db.patch(regulation._id, { isActive: false });
       }
     }
 
+    // Source: https://www.pokemon.com/us/play-pokemon/about/tournaments-rules-and-resources/
     const championsRegulation = {
       code: "champions-mega",
       name: "Champions — Set M-A",
       startsAt: Date.UTC(2026, 3, 8),
       endsAt: Date.UTC(2026, 5, 17),
       isActive: true,
-      activeGimmicks: ["mega"],
+      activeGimmicks: ["mega"] as const,
       legalSpecies,
       legalItems,
       restrictedAllowance: 1,
