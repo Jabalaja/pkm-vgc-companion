@@ -110,7 +110,7 @@ export const addMember = mutation({
     }
 
     const moves = args.member.moves ?? defaultMoves;
-    if (moves.length < 1 || moves.some((move) => move.length === 0)) {
+    if (moves.length === 0 || moves.some((move) => move.length === 0)) {
       throw new ConvexError("Member must have at least one move");
     }
 
