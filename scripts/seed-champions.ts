@@ -1,6 +1,5 @@
 import { execFileSync } from "node:child_process";
 import { pathToFileURL } from "node:url";
-import { runInNewContext } from "node:vm";
 
 import { toShowdownId } from "../convex/lib/showdownId";
 
@@ -43,14 +42,145 @@ async function fetchText(path: string): Promise<string> {
   return await response.text();
 }
 
-function parseFormats(source: string): ShowdownFormat[] {
-  const sandbox = { exports: {} as { Formats?: ShowdownFormat[] } };
-  runInNewContext(source, sandbox);
-  const formats = sandbox.exports.Formats;
-  if (!Array.isArray(formats)) {
-    throw new Error("Could not parse formats.js exports.Formats");
+function readQuotedStrings(source: string): string[] {
+  const values: string[] = [];
+  const pattern = /"([^"\\]*(?:\\.[^"\\]*)*)"|'([^'\\]*(?:\\.[^'\\]*)*)'/g;
+  let match: RegExpExecArray | null = pattern.exec(source);
+  while (match) {
+    values.push(
+      (match[1] ?? match[2] ?? "").replace(/\\'/g, "'").replace(/\\"/g, '"'),
+    );
+    match = pattern.exec(source);
   }
-  return formats;
+  return values;
+}
+
+function extractFormatsArray(source: string): string {
+  const assignmentStart = source.search(
+    /exports\.(Formats|BattleFormats)\s*=\s*\[/,
+  );
+  if (assignmentStart < 0) {
+    throw new Error("Could not find formats array assignment in formats.js");
+  }
+  const openBracket = source.indexOf("[", assignmentStart);
+  if (openBracket < 0) {
+    throw new Error("Could not find formats array opening bracket");
+  }
+
+  let inString: "'" | '"' | null = null;
+  let escaped = false;
+  let depth = 0;
+  for (let i = openBracket; i < source.length; i += 1) {
+    const char = source[i];
+    if (inString) {
+      if (escaped) {
+        escaped = false;
+      } else if (char === "\\") {
+        escaped = true;
+      } else if (char === inString) {
+        inString = null;
+      }
+      continue;
+    }
+    if (char === "'" || char === '"') {
+      inString = char;
+      continue;
+    }
+    if (char === "[") {
+      depth += 1;
+      continue;
+    }
+    if (char === "]") {
+      depth -= 1;
+      if (depth === 0) {
+        return source.slice(openBracket + 1, i);
+      }
+    }
+  }
+
+  throw new Error("Could not find formats array closing bracket");
+}
+
+function extractTopLevelObjects(arraySource: string): string[] {
+  const objects: string[] = [];
+  let inString: "'" | '"' | null = null;
+  let escaped = false;
+  let depth = 0;
+  let objectStart = -1;
+
+  for (let i = 0; i < arraySource.length; i += 1) {
+    const char = arraySource[i];
+    if (inString) {
+      if (escaped) {
+        escaped = false;
+      } else if (char === "\\") {
+        escaped = true;
+      } else if (char === inString) {
+        inString = null;
+      }
+      continue;
+    }
+    if (char === "'" || char === '"') {
+      inString = char;
+      continue;
+    }
+    if (char === "{") {
+      if (depth === 0) {
+        objectStart = i;
+      }
+      depth += 1;
+      continue;
+    }
+    if (char === "}") {
+      depth -= 1;
+      if (depth === 0 && objectStart >= 0) {
+        objects.push(arraySource.slice(objectStart, i + 1));
+        objectStart = -1;
+      }
+    }
+  }
+
+  return objects;
+}
+
+function extractStringProperty(
+  objectSource: string,
+  property: string,
+): string | undefined {
+  const pattern = new RegExp(
+    `${property}\\s*:\\s*("([^"\\\\]*(?:\\\\.[^"\\\\]*)*)"|'([^'\\\\]*(?:\\\\.[^'\\\\]*)*)')`,
+  );
+  const match = objectSource.match(pattern);
+  if (!match) {
+    return undefined;
+  }
+  return (match[2] ?? match[3] ?? "").replace(/\\'/g, "'").replace(/\\"/g, '"');
+}
+
+function extractStringArrayProperty(
+  objectSource: string,
+  property: string,
+): string[] | undefined {
+  const pattern = new RegExp(`${property}\\s*:\\s*\\[([\\s\\S]*?)\\]`);
+  const match = objectSource.match(pattern);
+  if (!match) {
+    return undefined;
+  }
+  return readQuotedStrings(match[1]);
+}
+
+function parseFormats(source: string): ShowdownFormat[] {
+  const objects = extractTopLevelObjects(extractFormatsArray(source));
+  return objects.map((objectSource) => {
+    return {
+      id: extractStringProperty(objectSource, "id"),
+      name: extractStringProperty(objectSource, "name"),
+      ruleset: extractStringArrayProperty(objectSource, "ruleset"),
+      banlist: extractStringArrayProperty(objectSource, "banlist"),
+      restricted: extractStringArrayProperty(objectSource, "restricted"),
+      unbanlist: extractStringArrayProperty(objectSource, "unbanlist"),
+    };
+  });
 }
 
 function isObtainable(value: { isNonstandard?: string }) {
