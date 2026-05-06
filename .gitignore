@@ -11,11 +11,10 @@
 *~
 
 # AI assistants — local tooling and instructions, not project artifacts.
-# `.github/` is intentionally NOT ignored: it holds repo-scoped collaboration
-# artifacts (issue templates, workflows, copilot-instructions) that the cloud
-# tooling needs to read.
+# Two exceptions are tracked:
+#   - `.github/` (issue templates, workflows, copilot-instructions) so cloud tooling reads them
+#   - `CLAUDE.md` as project-wide AI-agent documentation referenced by plan-issues
 .claude/
-CLAUDE.md
 .claude.json
 .copilot/
 AGENTS.md
