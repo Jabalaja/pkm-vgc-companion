@@ -85,6 +85,7 @@ export function showdownToPokeapiSlug(input: string): string {
     return `iron-${normalized.slice(4)}`;
   }
 
+  // Paradox past forms do not share a stable prefix, so they stay explicit.
   for (const region of ["alola", "galar", "hisui", "paldea"]) {
     if (normalized.endsWith(region) && normalized.length > region.length) {
       return `${normalized.slice(0, -region.length)}-${region}`;
