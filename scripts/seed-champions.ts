@@ -3,9 +3,9 @@ import { pathToFileURL } from "node:url";
 
 import { toShowdownId } from "../convex/lib/showdownId";
 
-// Source of truth: Showdown format `gen9vgc2026regulationm` in formats.js.
+// Source of truth: Showdown format `gen9vgc2026regi` in formats.js.
 // Update SHOWDOWN_CHAMPIONS_FORMAT_ID when Champions moves to the next regulation.
-const SHOWDOWN_CHAMPIONS_FORMAT_ID = "gen9vgc2026regulationm";
+const SHOWDOWN_CHAMPIONS_FORMAT_ID = "gen9vgc2026regi";
 const ENTRY_SEPARATOR_CHARS = new Set([",", " ", "\n", "\r", "\t"]);
 
 type ShowdownItemEntry = {
