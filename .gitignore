@@ -11,13 +11,12 @@
 *~
 
 # AI assistants — local tooling and instructions, not project artifacts.
-# Two exceptions are tracked:
+# These exceptions are tracked:
 #   - `.github/` (issue templates, workflows, copilot-instructions) so cloud tooling reads them
-#   - `CLAUDE.md` as project-wide AI-agent documentation referenced by plan-issues
+#   - `CLAUDE.md` and `AGENTS.md` as project-wide AI-agent documentation
 .claude/
 .claude.json
 .copilot/
-AGENTS.md
 .agents/
 skills-lock.json
 .cursor/

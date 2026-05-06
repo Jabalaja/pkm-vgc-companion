@@ -21,8 +21,8 @@ Hand off plans with enough context that an executor without prior conversation h
 - `.gitignore`, `.env.example`, `.github/workflows/*`
 - `README.md` and other Markdown docs
 - `convex/schema.ts` (data model is planning, not implementation)
-- `CLAUDE.md` (this file) — committed as project-wide AI-agent documentation; plan-issues reference it as a sync target
-- Other AI tooling (`AGENTS.md`, `.claude/`, `.agents/`, `skills-lock.json`) — gitignored, local only
+- `CLAUDE.md` (this file) and `AGENTS.md` — committed as project-wide AI-agent documentation; plan-issues reference them as sync targets
+- Other AI tooling (`.claude/`, `.agents/`, `skills-lock.json`) — gitignored, local only
 
 **Files you do not edit yourself (implementer scope):**
 
@@ -118,7 +118,7 @@ The Convex schema is in `convex/schema.ts`. Preserve the regulation-centric inva
 
 ### Gitignore policy
 
-The `.gitignore` excludes most AI-assistant tooling (`AGENTS.md`, `.claude/`, `.agents/`, `skills-lock.json`) plus generated artifacts (`src/routeTree.gen.ts`, `convex/_generated/` except the whitelisted `convex/_generated/ai/`, `.env.local`, `dist/`, `dev-dist/`). `CLAUDE.md` is the one tracked exception, because plan-issues reference it as project documentation. If a new AI tool generates files outside this list, extend `.gitignore` first.
+The `.gitignore` excludes most AI-assistant tooling (`.claude/`, `.agents/`, `skills-lock.json`) plus generated artifacts (`src/routeTree.gen.ts`, `convex/_generated/` except the whitelisted `convex/_generated/ai/`, `.env.local`, `dist/`, `dev-dist/`). `CLAUDE.md` and `AGENTS.md` are the tracked exceptions, because plan-issues reference them as project documentation. If a new AI tool generates files outside this list, extend `.gitignore` first.
 
 ## Reference
 
