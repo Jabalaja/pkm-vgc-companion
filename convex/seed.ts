@@ -11,11 +11,11 @@ export const seedChampionsRegulation = internalMutation({
   handler: async (ctx, args) => {
     const legalSpecies = Array.from(new Set(args.legalSpecies));
     const legalItems = Array.from(new Set(args.legalItems));
-    const championsRegulations: Id<"regulations">[] = [];
+    let existingChampionsId: Id<"regulations"> | null = null;
 
     for await (const regulation of ctx.db.query("regulations")) {
       if (regulation.code === "champions-mega") {
-        championsRegulations.push(regulation._id);
+        existingChampionsId ??= regulation._id;
         if (regulation.isActive) {
           await ctx.db.patch(regulation._id, { isActive: false });
         }
@@ -34,11 +34,11 @@ export const seedChampionsRegulation = internalMutation({
       legalSpecies,
       legalItems,
       restrictedAllowance: 1,
-    } as const;
+    };
 
-    if (championsRegulations[0]) {
-      await ctx.db.patch(championsRegulations[0], championsRegulation);
-      return championsRegulations[0];
+    if (existingChampionsId) {
+      await ctx.db.patch(existingChampionsId, championsRegulation);
+      return existingChampionsId;
     }
 
     return await ctx.db.insert("regulations", {
