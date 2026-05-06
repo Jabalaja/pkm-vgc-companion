@@ -1,5 +1,6 @@
 import { execFileSync } from "node:child_process";
 import { pathToFileURL } from "node:url";
+import vm from "node:vm";
 
 import { toShowdownId } from "../convex/lib/showdownId";
 
@@ -44,6 +45,77 @@ async function fetchText(path: string): Promise<string> {
     );
   }
   return await response.text();
+}
+
+function extractExportObject(source: string, exportName: string): string {
+  const assignmentStart = source.search(
+    new RegExp(`exports\\.${escapeRegExp(exportName)}\\s*=\\s*\\{`),
+  );
+  if (assignmentStart < 0) {
+    throw new Error(
+      `Could not find exports.${exportName} assignment in Showdown source`,
+    );
+  }
+
+  const openBrace = source.indexOf("{", assignmentStart);
+  if (openBrace < 0) {
+    throw new Error(`Could not find object opening brace for ${exportName}`);
+  }
+
+  let inString: "'" | '"' | null = null;
+  let escaped = false;
+  let depth = 0;
+
+  for (let i = openBrace; i < source.length; i += 1) {
+    const char = source[i];
+    if (inString) {
+      if (escaped) {
+        escaped = false;
+      } else if (char === "\\") {
+        escaped = true;
+      } else if (char === inString) {
+        inString = null;
+      }
+      continue;
+    }
+
+    if (char === "'" || char === '"') {
+      inString = char;
+      continue;
+    }
+    if (char === "{") {
+      depth += 1;
+      continue;
+    }
+    if (char === "}") {
+      depth -= 1;
+      if (depth === 0) {
+        return source.slice(openBrace, i + 1);
+      }
+    }
+  }
+
+  throw new Error(`Could not find object closing brace for ${exportName}`);
+}
+
+export function parseShowdownExportObject<T extends Record<string, unknown>>(
+  source: string,
+  exportName: string,
+): T {
+  const exportObject = extractExportObject(source, exportName);
+  const parsed = vm.runInNewContext(`(${exportObject})`, {}, { timeout: 1000 });
+  if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
+    throw new Error(`exports.${exportName} is not an object`);
+  }
+  return parsed as T;
+}
+
+async function fetchShowdownExport<T extends Record<string, unknown>>(
+  path: string,
+  exportName: string,
+): Promise<T> {
+  const source = await fetchText(path);
+  return parseShowdownExportObject<T>(source, exportName);
 }
 
 function unescapeQuotedString(value: string): string {
@@ -355,7 +427,10 @@ async function main() {
 
   const [pokedex, items, formatsSource] = await Promise.all([
     fetchJson<Record<string, ShowdownPokedexEntry>>("pokedex.json"),
-    fetchJson<Record<string, ShowdownItemEntry>>("items.json"),
+    fetchShowdownExport<Record<string, ShowdownItemEntry>>(
+      "items.js",
+      "BattleItems",
+    ),
     fetchText("formats.js"),
   ]);
   const rules = collectFormatRules(

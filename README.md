@@ -141,7 +141,7 @@ Auto-rebase of open PR branches against `main` was evaluated and skipped: the ex
 
 ## Data sources
 
-- **PokeAPI** provides Pokémon detail data (sprites, types, abilities, base stats) at runtime. **Pokémon Showdown's public data dump** (`play.pokemonshowdown.com/data/*.json`) is consumed once via `pnpm seed:champions` to derive the active regulation's `legalSpecies` and `legalItems`.
+- **PokeAPI** provides Pokémon detail data (sprites, types, abilities, base stats) at runtime. **Pokémon Showdown's public data dump** (`play.pokemonshowdown.com/data/`) is consumed once via `pnpm seed:champions` using `pokedex.json`, `items.js`, and `formats.js` to derive the active regulation's `legalSpecies` and `legalItems`.
 - Usage statistics: aggregated public ladder data (e.g. Pikalytics-compatible feeds)
 - Regulation rules: tracked manually against the [official Play! Pokémon resources](https://play.pokemon.com/en-us/resources/rules/?category=vgc)
 
