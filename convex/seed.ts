@@ -1,4 +1,4 @@
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 
 import type { Id } from "./_generated/dataModel";
 import { internalMutation } from "./_generated/server";
@@ -15,7 +15,14 @@ export const seedChampionsRegulation = internalMutation({
 
     for await (const regulation of ctx.db.query("regulations")) {
       if (regulation.code === "champions-mega") {
-        existingChampionsId ??= regulation._id;
+        if (existingChampionsId && existingChampionsId !== regulation._id) {
+          throw new ConvexError(
+            "Multiple champions-mega regulations found; clean duplicates before seeding",
+          );
+        }
+        if (!existingChampionsId) {
+          existingChampionsId = regulation._id;
+        }
         if (regulation.isActive) {
           await ctx.db.patch(regulation._id, { isActive: false });
         }
