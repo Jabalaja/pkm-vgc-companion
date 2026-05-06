@@ -3,25 +3,27 @@
 import { convexTest } from "convex-test";
 import { describe, expect, it } from "vitest";
 
+import schema from "./schema";
+
 const regulation = {
   code: "CH-I",
   name: "Champions Regulation I",
   startsAt: 1,
   endsAt: 2,
-  activeGimmicks: ["mega"] as const,
-  legalSpecies: ["Pikachu"],
-  legalItems: ["Light Ball"],
+  isActive: true,
+  activeGimmicks: ["mega"] satisfies Array<"mega" | "tera" | "z" | "dynamax">,
+  legalSpecies: ["pikachu"],
+  legalItems: ["lightball"],
   restrictedAllowance: 1,
 };
 
 const modules = {
   ...import.meta.glob("./**/*.ts"),
-  "./_generated/api.ts": async () => ({}),
 };
 
 describe("convex-test pattern", () => {
   it("writes and reads regulation documents", async () => {
-    const t = convexTest({ modules });
+    const t = convexTest({ schema, modules });
 
     const regulationId = await t.mutation(async (ctx) => {
       return await ctx.db.insert("regulations", regulation);
@@ -36,7 +38,7 @@ describe("convex-test pattern", () => {
   });
 
   it("queries inserted regulations", async () => {
-    const t = convexTest({ modules });
+    const t = convexTest({ schema, modules });
 
     await t.mutation(async (ctx) => {
       await ctx.db.insert("regulations", {
@@ -61,5 +63,28 @@ describe("convex-test pattern", () => {
       "Champions Regulation II",
     ]);
     expect(regulationNames).toHaveLength(2);
+  });
+
+  it("allows regulations without isActive", async () => {
+    const t = convexTest({ schema, modules });
+
+    const regulationId = await t.mutation(async (ctx) => {
+      return await ctx.db.insert("regulations", {
+        code: "CH-III",
+        name: "Champions Regulation III",
+        startsAt: 3,
+        endsAt: 4,
+        activeGimmicks: ["mega"],
+        legalSpecies: ["bulbasaur"],
+        legalItems: ["sitrusberry"],
+        restrictedAllowance: 1,
+      });
+    });
+
+    const storedRegulation = await t.query(async (ctx) => {
+      return await ctx.db.get(regulationId);
+    });
+
+    expect(storedRegulation?.isActive).toBeUndefined();
   });
 });
