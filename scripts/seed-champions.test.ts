@@ -49,4 +49,12 @@ describe("seed-champions helpers", () => {
     expect(parsed.leftovers?.isNonstandard).toBe("Past");
     expect(parsed.testitem?.isNonstandard).toBeUndefined();
   });
+
+  it("parses escaped quotes in quoted keys and values", () => {
+    const parsed = parseShowdownItems(`exports.BattleItems = {
+      "king\\'srock": {isNonstandard: "Pa\\"st"},
+    };`);
+
+    expect(parsed.kingsrock?.isNonstandard).toBe('Pa"st');
+  });
 });
