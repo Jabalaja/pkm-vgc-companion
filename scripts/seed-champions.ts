@@ -6,6 +6,7 @@ import { toShowdownId } from "../convex/lib/showdownId";
 // Source of truth: Showdown format `gen9vgc2026regulationm` in formats.js.
 // Update SHOWDOWN_CHAMPIONS_FORMAT_ID when Champions moves to the next regulation.
 const SHOWDOWN_CHAMPIONS_FORMAT_ID = "gen9vgc2026regulationm";
+const ENTRY_SEPARATOR_CHARS = new Set([",", " ", "\n", "\r", "\t"]);
 
 type ShowdownItemEntry = {
   isNonstandard?: string;
@@ -167,16 +168,15 @@ function extractTopLevelObjectEntries(
   let index = 0;
 
   while (index < source.length) {
-    while (
-      index < source.length &&
-      [",", " ", "\n", "\r", "\t"].includes(source[index])
-    ) {
+    while (index < source.length && ENTRY_SEPARATOR_CHARS.has(source[index])) {
       index += 1;
     }
     if (index >= source.length) {
       break;
     }
 
+    // Matches either a quoted key (single/double quotes, escaped chars allowed)
+    // or an unquoted identifier key.
     const keyMatch = source
       .slice(index)
       .match(
