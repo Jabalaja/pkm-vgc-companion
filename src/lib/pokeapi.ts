@@ -29,6 +29,18 @@ const specialCases: Record<string, string> = {
   porygonz: "porygon-z",
   hooh: "ho-oh",
   typenull: "type-null",
+  greattusk: "great-tusk",
+  screamtail: "scream-tail",
+  brutebonnet: "brute-bonnet",
+  fluttermane: "flutter-mane",
+  slitherwing: "slither-wing",
+  sandyshocks: "sandy-shocks",
+  roaringmoon: "roaring-moon",
+  walkingwake: "walking-wake",
+  gougingfire: "gouging-fire",
+  ragingbolt: "raging-bolt",
+  nidoranf: "nidoran-f",
+  nidoranm: "nidoran-m",
 };
 
 /**
@@ -63,6 +75,14 @@ export function showdownToPokeapiSlug(input: string): string {
 
   if (normalized.endsWith("rapidstrike")) {
     return `${normalized.slice(0, -11)}-rapid-strike`;
+  }
+
+  if (normalized.startsWith("tapu") && normalized.length > 4) {
+    return `tapu-${normalized.slice(4)}`;
+  }
+
+  if (normalized.startsWith("iron") && normalized.length > 4) {
+    return `iron-${normalized.slice(4)}`;
   }
 
   for (const region of ["alola", "galar", "hisui", "paldea"]) {

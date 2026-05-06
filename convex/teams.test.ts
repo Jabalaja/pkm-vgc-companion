@@ -205,36 +205,21 @@ describe("teams.addMember", () => {
     });
   });
 
-  it("rejects members without at least one move", async () => {
+  it("accepts placeholder moves for phase 1 initial add flow", async () => {
     const t = convexTest({ schema, modules });
     const teamId = await createTeam(t);
 
-    await expect(
-      t.mutation(addMember, {
-        teamId,
-        member: {
-          species: "pikachu",
-          ability: "static",
-          item: "lightball",
-        },
-      }),
-    ).rejects.toThrowError("Member must have at least one move");
-  });
+    await t.mutation(addMember, {
+      teamId,
+      member: {
+        species: "pikachu",
+        ability: "static",
+        item: "lightball",
+        moves: ["", "", "", ""],
+      },
+    });
 
-  it("rejects empty move names", async () => {
-    const t = convexTest({ schema, modules });
-    const teamId = await createTeam(t);
-
-    await expect(
-      t.mutation(addMember, {
-        teamId,
-        member: {
-          species: "pikachu",
-          ability: "static",
-          item: "lightball",
-          moves: [""],
-        },
-      }),
-    ).rejects.toThrowError("Move names cannot be empty");
+    const team = await t.query(async (ctx) => await ctx.db.get(teamId));
+    expect(team?.members[0]?.moves).toEqual(["", "", "", ""]);
   });
 });

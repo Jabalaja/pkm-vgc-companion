@@ -110,12 +110,7 @@ export const addMember = mutation({
     }
 
     const moves = args.member.moves ?? defaultMoves;
-    if (moves.length === 0) {
-      throw new ConvexError("Member must have at least one move");
-    }
-    if (moves.some((move) => move.length === 0)) {
-      throw new ConvexError("Move names cannot be empty");
-    }
+    // Strict move validation is deferred to the Phase 2 move-picker flow.
 
     await ctx.db.patch(team._id, {
       members: [

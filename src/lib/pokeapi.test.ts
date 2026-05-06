@@ -24,6 +24,22 @@ describe("showdownToPokeapiSlug", () => {
     );
     expect(showdownToPokeapiSlug("raichualola")).toBe("raichu-alola");
   });
+
+  it("maps tapu family with prefix rule", () => {
+    expect(showdownToPokeapiSlug("tapukoko")).toBe("tapu-koko");
+  });
+
+  it("maps iron family with prefix rule", () => {
+    expect(showdownToPokeapiSlug("ironvaliant")).toBe("iron-valiant");
+  });
+
+  it("maps paradox past forms with explicit cases", () => {
+    expect(showdownToPokeapiSlug("fluttermane")).toBe("flutter-mane");
+  });
+
+  it("maps nidoran gendered forms", () => {
+    expect(showdownToPokeapiSlug("nidoranf")).toBe("nidoran-f");
+  });
 });
 
 describe("fetchPokemonBySlug", () => {
