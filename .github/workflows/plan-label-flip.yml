@@ -1,15 +1,15 @@
-name: Flip plan label on Copilot pickup
+name: Plan label lifecycle
 
 on:
   issues:
-    types: [assigned]
+    types: [assigned, closed]
 
 permissions:
   issues: write
 
 jobs:
-  flip:
-    if: github.event.assignee.login == 'Copilot'
+  flip-on-pickup:
+    if: github.event.action == 'assigned' && github.event.assignee.login == 'Copilot'
     runs-on: ubuntu-latest
     steps:
       - name: Move plan:ready -> plan:in-progress
@@ -20,3 +20,15 @@ jobs:
             --repo "${{ github.repository }}" \
             --add-label "plan:in-progress" \
             --remove-label "plan:ready"
+
+  cleanup-on-close:
+    if: github.event.action == 'closed' && contains(github.event.issue.labels.*.name, 'plan:in-progress')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Remove plan:in-progress on close
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue edit "${{ github.event.issue.number }}" \
+            --repo "${{ github.repository }}" \
+            --remove-label "plan:in-progress"
