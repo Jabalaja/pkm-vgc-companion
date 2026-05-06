@@ -12,6 +12,10 @@ Claude Code (the planner). You do not invent scope.
 - Open a PR that closes the issue with `Fixes #N`.
 - Before marking the PR ready: run `pnpm check`, `pnpm test`, and
   `pnpm build`. CI runs the same gates.
+- Do not click "Merge". Auto-merge is enabled automatically on
+  `copilot/*` branches; Chris's approval is the merge trigger.
+  Pushing additional commits after Chris approves will require
+  re-approval before the PR can merge.
 
 ## Tech stack (do not deviate)
 
