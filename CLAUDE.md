@@ -100,6 +100,7 @@ The Convex schema is in `convex/schema.ts`. Preserve the regulation-centric inva
 
 - **TanStack Router** with file-based routes under `src/routes/`. The route tree is auto-generated to `src/routeTree.gen.ts` on `pnpm dev` (gitignored).
 - **TanStack Query** for any server state that is not already covered by Convex hooks. Convex hooks are the primary data path for Convex-backed data.
+- **PokeAPI client** lives at `src/lib/pokeapi.ts`. All PokeAPI fetches go through it; do not create alternative clients elsewhere.
 - **Zustand** for ephemeral client state (selection, filters, tournament-mode toggles). Not a cache.
 - **shadcn/ui** components live in `src/components/ui/` as committed source code, not a packaged dependency. Bend them freely.
 - **Tailwind v4** uses CSS-first configuration. Theme tokens live in `src/index.css` under `@theme`. There is no `tailwind.config.js`.
