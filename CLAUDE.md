@@ -32,6 +32,8 @@ Hand off plans with enough context that an executor without prior conversation h
 
 When asked to implement, write a plan instead.
 
+**Branch and merge policy.** Even maintainer-scope edits (workflow YAMLs, config, docs) go via a feature branch and PR — never push directly to `main`. The PR can be small and self-approved by Chris, but the PR-and-CI gate stays on. Direct push is only acceptable when Chris explicitly says "push directly to main" for a specific change.
+
 ## Planning workflow
 
 Plans are handed off via **GitHub Issues**. The repo is `Jabalaja/pkm-vgc-companion`.
