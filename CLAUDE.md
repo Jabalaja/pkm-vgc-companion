@@ -98,6 +98,20 @@ A `team` references one regulation. Every Pokémon in that team draws its legal 
 
 The Convex schema is in `convex/schema.ts`. Preserve the regulation-centric invariant when evolving it.
 
+### Pokémon Champions ≠ mainline VGC
+
+This app targets **Pokémon Champions**, the standalone competitive title that took over Play! Pokémon competitions in April 2026. Champions ships its own training system that diverges from the mainline games. Plans, schemas, and UI controls must reflect Champions, not mainline VGC.
+
+| Mainline VGC | Pokémon Champions |
+| --- | --- |
+| EVs: 510 total, 252/stat cap, step 4 | **Stat Points (SP)**: 66 total, 32/stat cap, step 1 |
+| IVs: 0–31 per stat, editable | **IVs removed**, locked at 31, no UI |
+| 25 natures, 5 neutral | **Stat Alignments**: 21 options, only "Serious" is neutral |
+| Levels 1–100 (50 in VGC) | **Level always 50**, fixed |
+| Tera per Pokémon (Gen 9) | only when `regulation.activeGimmicks` includes "tera" |
+
+Before designing UI controls or schema for trainer/team mechanics, verify the rules against current Pokémon Champions documentation rather than assuming defaults from mainline VGC.
+
 ### Frontend
 
 - **TanStack Router** with file-based routes under `src/routes/`. The route tree is auto-generated to `src/routeTree.gen.ts` on `pnpm dev` (gitignored).
