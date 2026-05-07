@@ -15,7 +15,7 @@ const addMember = makeFunctionReference<"mutation">("teams:addMember");
 
 function regulationDoc() {
   return {
-    code: "champions-mega",
+    code: "M-A",
     name: "Champions — Set M-A",
     startsAt: 1,
     endsAt: 2,

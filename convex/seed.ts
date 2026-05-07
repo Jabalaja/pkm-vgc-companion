@@ -14,10 +14,10 @@ export const seedChampionsRegulation = internalMutation({
     let existingChampionsId: Id<"regulations"> | null = null;
 
     for await (const regulation of ctx.db.query("regulations")) {
-      if (regulation.code === "champions-mega") {
+      if (regulation.code === "M-A") {
         if (existingChampionsId && existingChampionsId !== regulation._id) {
           throw new ConvexError(
-            "Multiple champions-mega regulations found; clean duplicates before seeding",
+            "Multiple M-A regulations found; clean duplicates before seeding",
           );
         }
         if (!existingChampionsId) {
@@ -28,9 +28,9 @@ export const seedChampionsRegulation = internalMutation({
       }
     }
 
-    // Source for Regulation M dates (champions-mega): https://www.pokemon.com/us/play-pokemon/about/tournaments-rules-and-resources/
+    // Source for Regulation M dates (M-A): https://www.pokemon.com/us/play-pokemon/about/tournaments-rules-and-resources/
     const championsRegulation = {
-      code: "champions-mega",
+      code: "M-A",
       name: "Champions — Set M-A",
       startsAt: Date.UTC(2026, 3, 8),
       endsAt: Date.UTC(2026, 5, 17),

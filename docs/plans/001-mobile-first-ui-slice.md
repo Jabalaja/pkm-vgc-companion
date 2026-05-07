@@ -189,10 +189,10 @@ Order is implementation order. Each issue is scoped so that one PR yields a clea
 
 **A0 · Rename regulation code to the official identifier "M-A"**
 - Files: `convex/seed.ts`, `convex/seed.test.ts`, `convex/teams.test.ts`
-- Today: `regulations.code = "champions-mega"` (descriptive, not official). The Pokémon Company calls the regulation **M-A**; the `name` field already reads "Champions — Set M-A".
-- Action: replace every occurrence of `"champions-mega"` with `"M-A"`. `name` stays "Champions — Set M-A" (or optionally shortens to "Regulation Set M-A" — not strictly part of this issue).
+- Today: `regulations.code` uses a descriptive legacy value (not official). The Pokémon Company calls the regulation **M-A**; the `name` field already reads "Champions — Set M-A".
+- Action: replace every occurrence of the legacy code with `"M-A"`. `name` stays "Champions — Set M-A" (or optionally shortens to "Regulation Set M-A" — not strictly part of this issue).
 - Frontend impact: none. `regulations:getActive` filters by `isActive`; no `src/` code references the code string.
-- Acceptance: `pnpm test` green; `pnpm exec convex run seed:seedChampionsRegulation` (or `pnpm seed:champions`) produces a regulation row with `code: "M-A"`. Any existing entry with `code: "champions-mega"` in the dev Convex deployment must be deleted or patched once — implementer notes this in the PR body.
+- Acceptance: `pnpm test` green; `pnpm exec convex run seed:seedChampionsRegulation` (or `pnpm seed:champions`) produces a regulation row with `code: "M-A"`. Any existing entry with the old legacy code in the dev Convex deployment must be deleted or patched once — implementer notes this in the PR body.
 - **Order**: this issue must merge **before A1** so all subsequent tests run against the new code from the start.
 
 **A1 · Schema migration to the Champions stat system**

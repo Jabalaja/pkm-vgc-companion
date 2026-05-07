@@ -39,7 +39,7 @@ describe("seed.seedChampionsRegulation", () => {
     );
     const stored = await t.query(async (ctx) => await ctx.db.get(regulationId));
 
-    expect(stored?.code).toBe("champions-mega");
+    expect(stored?.code).toBe("M-A");
     expect(stored?.isActive).toBe(true);
   });
 
@@ -86,14 +86,8 @@ describe("seed.seedChampionsRegulation", () => {
   it("throws when duplicate champions rows exist", async () => {
     const t = convexTest({ schema, modules });
     await t.mutation(async (ctx) => {
-      await ctx.db.insert(
-        "regulations",
-        makeRegulation("champions-mega", false),
-      );
-      await ctx.db.insert(
-        "regulations",
-        makeRegulation("champions-mega", false),
-      );
+      await ctx.db.insert("regulations", makeRegulation("M-A", false));
+      await ctx.db.insert("regulations", makeRegulation("M-A", false));
     });
 
     await expect(
@@ -101,6 +95,6 @@ describe("seed.seedChampionsRegulation", () => {
         legalSpecies: ["pikachu"],
         legalItems: ["lightball"],
       }),
-    ).rejects.toThrowError("Multiple champions-mega regulations found");
+    ).rejects.toThrowError("Multiple M-A regulations found");
   });
 });
